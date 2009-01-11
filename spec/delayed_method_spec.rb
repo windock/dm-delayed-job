@@ -14,7 +14,8 @@ end
 class ErrorObject
 
   def throw
-    raise ActiveRecord::RecordNotFound, '...'
+    error = ENV['DM'] ? DataMapper::ObjectNotFoundError : ActiveRecord::RecordNotFound
+    raise error, '...'
     false
   end
 
@@ -81,6 +82,7 @@ describe 'random ruby objects' do
     output = nil
 
     Delayed::Job.reserve do |e|
+      puts e.inspect
       output = e.perform
     end
 
@@ -92,9 +94,9 @@ describe 'random ruby objects' do
     story = Story.create :text => 'Once upon...'
     story.send_later(:tell)
 
-    job =  Delayed::Job.find(:first)
+    job =  Delayed::Job.first
     job.payload_object.class.should   == Delayed::PerformableMethod
-    job.payload_object.object.should  == "AR:Story:#{story.id}"
+    job.payload_object.object.should  == "#{ENV['DM'] ? "DM" : "AR"}:Story:#{story.id}"
     job.payload_object.method.should  == :tell
     job.payload_object.args.should    == []
     job.payload_object.perform.should == 'Once upon...'
@@ -107,10 +109,10 @@ describe 'random ruby objects' do
     reader = StoryReader.new
     reader.send_later(:read, story)
 
-    job =  Delayed::Job.find(:first)
+    job =  Delayed::Job.first
     job.payload_object.class.should   == Delayed::PerformableMethod
     job.payload_object.method.should  == :read
-    job.payload_object.args.should    == ["AR:Story:#{story.id}"]
+    job.payload_object.args.should    == ["#{ENV['DM'] ? "DM" : "AR"}:Story:#{story.id}"]
     job.payload_object.perform.should == 'Epilog: Once upon...'
   end
 

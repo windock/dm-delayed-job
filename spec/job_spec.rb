@@ -58,7 +58,7 @@ describe Delayed::Job do
     Delayed::Job.enqueue SimpleJob.new, 5, later
 
     # use be close rather than equal to because millisecond values cn be lost in DB round trip
-    Delayed::Job.first.run_at.should be_close(later, 1)
+    Delayed::Job.first.run_at.to_time.should be_close(later.to_time, 1)
   end
 
   it "should call perform on jobs when running work_off" do
@@ -97,7 +97,7 @@ describe Delayed::Job do
     Delayed::Job.enqueue ErrorJob.new
     Delayed::Job.work_off(1)
 
-    job = Delayed::Job.find(:first)
+    job = Delayed::Job.first
 
     job.last_error.should =~ /did not work/
     job.last_error.should =~ /job_spec.rb:10:in `perform'/
@@ -110,14 +110,14 @@ describe Delayed::Job do
   it "should raise an DeserializationError when the job class is totally unknown" do
 
     job = Delayed::Job.new
-    job['handler'] = "--- !ruby/object:JobThatDoesNotExist {}"
+    job.handler = "--- !ruby/object:JobThatDoesNotExist {}"
 
     lambda { job.payload_object.perform }.should raise_error(Delayed::DeserializationError)
   end
 
   it "should try to load the class when it is unknown at the time of the deserialization" do
     job = Delayed::Job.new
-    job['handler'] = "--- !ruby/object:JobThatDoesNotExist {}"
+    job.handler = "--- !ruby/object:JobThatDoesNotExist {}"
 
     job.should_receive(:attempt_to_load).with('JobThatDoesNotExist').and_return(true)
 
@@ -126,14 +126,14 @@ describe Delayed::Job do
 
   it "should try include the namespace when loading unknown objects" do
     job = Delayed::Job.new
-    job['handler'] = "--- !ruby/object:Delayed::JobThatDoesNotExist {}"
+    job.handler = "--- !ruby/object:Delayed::JobThatDoesNotExist {}"
     job.should_receive(:attempt_to_load).with('Delayed::JobThatDoesNotExist').and_return(true)
     lambda { job.payload_object.perform }.should raise_error(Delayed::DeserializationError)
   end
 
   it "should also try to load structs when they are unknown (raises TypeError)" do
     job = Delayed::Job.new
-    job['handler'] = "--- !ruby/struct:JobThatDoesNotExist {}"
+    job.handler = "--- !ruby/struct:JobThatDoesNotExist {}"
 
     job.should_receive(:attempt_to_load).with('JobThatDoesNotExist').and_return(true)
 
@@ -142,7 +142,7 @@ describe Delayed::Job do
 
   it "should try include the namespace when loading unknown structs" do
     job = Delayed::Job.new
-    job['handler'] = "--- !ruby/struct:Delayed::JobThatDoesNotExist {}"
+    job.handler = "--- !ruby/struct:Delayed::JobThatDoesNotExist {}"
 
     job.should_receive(:attempt_to_load).with('Delayed::JobThatDoesNotExist').and_return(true)
     lambda { job.payload_object.perform }.should raise_error(Delayed::DeserializationError)
@@ -194,7 +194,6 @@ describe Delayed::Job do
     it "should be able to get access to the task if it was started more then max_age ago" do
       @job.locked_at = 5.hours.ago
       @job.save
-
       @job.lock_exclusively! 4.hours, 'worker2'
       @job.reload
       @job.locked_by.should == 'worker2'

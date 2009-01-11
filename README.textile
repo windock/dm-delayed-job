@@ -28,6 +28,8 @@ The library evolves around a delayed_jobs table which looks as follows:
     table.timestamps
   end
   
+Delayed Job now supports both ActiveRecord and DataMapper as it's ORM.  If DataMapper is defined when the gem is loaded, it will use it instead of ActiveRecord.  To setup your table with DataMapper, require delayed_job in your application and run `Delayed::Job.auto_migrate!`. 
+  
 h2. Usage
 
 Jobs are simple ruby objects with a method called perform. Any object which responds to perform can be stuffed into the jobs table.
@@ -68,7 +70,13 @@ h3. Cleaning up
 
 You can invoke @rake jobs:clear@ to delete all jobs in the queue.
 
+h3. Running specs
+
+Running rake spec will run all of the specs using ActiveRecord.  To test the application using DataMapper run `rake spec DM=true`.
+
 h3. Changes
+
+* 1.8.0: Added a DataMapper adapter which is loaded instead of the ActiveRecord adapter if DataMapper is defined.
 
 * 1.7.0: Added failed_at column which can optionally be set after a certain amount of failed job attempts. By default failed job attempts are destroyed after about a month. 
 
