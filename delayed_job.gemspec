@@ -24,7 +24,11 @@ Gem::Specification.new do |s|
     README.textile
     delayed_job.gemspec
     init.rb
+    Rakefile
     lib/delayed/job.rb
+    lib/delayed/job/common.rb
+    lib/delayed/job/active_record.rb
+    lib/delayed/job/data_mapper.rb
     lib/delayed/message_sending.rb
     lib/delayed/performable_method.rb
     lib/delayed/worker.rb
