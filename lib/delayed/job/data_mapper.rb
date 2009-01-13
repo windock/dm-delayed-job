@@ -16,7 +16,7 @@ module Delayed
     timestamps(:at)
     
     def self.update_all(with, from)
-      repository(:default).adapter.execute("UPDATE #{storage_names[:default]} SET #{with[0]} WHERE #{from[0]}", *with[1..-1].concat(from[1..-1])).affected_rows
+      repository(:default).adapter.execute("UPDATE #{storage_names[:default]} SET #{Array(with)[0]} WHERE #{Array(from)[0]}", *Array(with)[1..-1].concat(Array(from)[1..-1])).affected_rows
     end
     
     def self.delete_all

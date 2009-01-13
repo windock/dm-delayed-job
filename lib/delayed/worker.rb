@@ -28,7 +28,7 @@ module Delayed
           result = Delayed::Job.work_off
         end
 
-        count = result.sum
+        count = result.inject(0) { |sum, i| sum+= i }
 
         break if $exit
 
