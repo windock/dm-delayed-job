@@ -8,7 +8,7 @@ module Delayed
     property :priority, Integer, :default => 0
     property :attempts, Integer, :default => 0
     property :handler, Text
-    property :last_error, String
+    property :last_error, Text
     property :run_at, Time
     property :locked_at, Time
     property :locked_by, String
