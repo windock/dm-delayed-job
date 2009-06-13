@@ -33,7 +33,7 @@ module Delayed
       case arg
       when CLASS_STRING_FORMAT then $1.constantize
       when AR_STRING_FORMAT then $1.constantize.find($2)
-      when DM_STRING_FORMAT then $1.constantize.get($2) 
+      when DM_STRING_FORMAT then $1.constantize.get!($2) 
       else arg
       end
     end

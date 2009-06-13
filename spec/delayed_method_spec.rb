@@ -90,6 +90,23 @@ describe 'random ruby objects' do
 
   end
 
+  it "should ignore delayed method calls on objects that have been deleted." do
+    story = Story.create :text => 'Once upon...'
+    story.send_later(:tell)
+
+    story.destroy
+    Story.count.should == 0
+
+    output = nil
+
+    Delayed::Job.reserve do |e|
+      puts e.inspect
+      output = e.perform
+    end
+
+    output.should == true
+  end
+
   it "should store the object as string if its an active record" do
     story = Story.create :text => 'Once upon...'
     story.send_later(:tell)
