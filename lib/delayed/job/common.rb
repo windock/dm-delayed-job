@@ -167,14 +167,14 @@ module Delayed
         conditions.unshift(sql)
         
         #DM vs. AR
-        if self.respond_to?(:find)
-          records = ActiveRecord::Base.silence do
-            find(:all, :conditions => conditions, :order => Delayed::Job::NextTaskOrder, :limit => limit)
-          end
-        else
+        if defined?(DataMapper)
           orig, DataMapper.logger.level = DataMapper.logger.level, :error
           records = all(:conditions => conditions, :order => Delayed::Job::NextTaskOrder, :limit => limit)
           DataMapper.logger.level = orig
+        else
+          records = ActiveRecord::Base.silence do
+            find(:all, :conditions => conditions, :order => Delayed::Job::NextTaskOrder, :limit => limit)
+          end
         end
       
         records.sort_by { rand() }
