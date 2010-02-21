@@ -12,6 +12,8 @@ module Delayed
   class DeserializationError < StandardError
   end
 
+  # A job object that is persisted to the database.
+  # Contains the work object as a YAML field.
   class Job
     include DataMapper::Resource
 
@@ -69,6 +71,10 @@ module Delayed
     
     def self.logger
       DataMapper.logger
+    end
+
+    def self.clear_locks!
+      update_all("locked_by = null, locked_at = null", ["locked_by = ?", worker_name])
     end
 
     def failed?
@@ -199,10 +205,6 @@ module Delayed
 
       self.locked_at    = now
       self.locked_by    = worker
-    end
-
-    def self.clear_locks!
-      update_all("locked_by = null, locked_at = null", ["locked_by = ?", worker_name])
     end
 
     # Unlock this job (note: not saved to DB)
