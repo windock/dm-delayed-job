@@ -18,6 +18,9 @@ if ENV['DM']
     property :text, Text
     
     def tell; text; end
+    def whatever(n, _); tell*n; end
+
+    handle_asynchronously :whatever
   end
   DataMapper.auto_migrate!
 else

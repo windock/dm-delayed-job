@@ -79,32 +79,10 @@ describe 'random ruby objects' do
 
     Delayed::Job.count.should == 1
 
-    output = nil
+    Delayed::Job.reserve_and_run_one_job
 
-    Delayed::Job.reserve do |e|
-      puts e.inspect
-      output = e.perform
-    end
+    Delayed::Job.count.should == 0
 
-    output.should == true
-
-  end
-
-  it "should ignore delayed method calls on objects that have been deleted." do
-    story = Story.create :text => 'Once upon...'
-    story.send_later(:tell)
-
-    story.destroy
-    Story.count.should == 0
-
-    output = nil
-
-    Delayed::Job.reserve do |e|
-      puts e.inspect
-      output = e.perform
-    end
-
-    output.should == true
   end
 
   it "should store the object as string if its an active record" do
@@ -131,6 +109,21 @@ describe 'random ruby objects' do
     job.payload_object.method.should  == :read
     job.payload_object.args.should    == ["#{ENV['DM'] ? "DM" : "AR"}:Story:#{story.id}"]
     job.payload_object.perform.should == 'Epilog: Once upon...'
+  end                 
+  
+  it "should call send later on methods which are wrapped with handle_asynchronously" do
+    story = Story.create :text => 'Once upon...'
+  
+    Delayed::Job.count.should == 0
+  
+    story.whatever(1, 5)
+  
+    Delayed::Job.count.should == 1
+    job =  Delayed::Job.first
+    job.payload_object.class.should   == Delayed::PerformableMethod
+    job.payload_object.method.should  == :whatever_without_send_later
+    job.payload_object.args.should    == [1, 5]
+    job.payload_object.perform.should == 'Once upon...'
   end
 
 end
