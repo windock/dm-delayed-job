@@ -1,7 +1,6 @@
 module Delayed
   class PerformableMethod < Struct.new(:object, :method, :args)
     CLASS_STRING_FORMAT = /^CLASS\:([A-Z][\w\:]+)$/
-    AR_STRING_FORMAT    = /^AR\:([A-Z][\w\:]+)\:(\d+)$/
     DM_STRING_FORMAT    = /^DM\:([A-Z][\w\:]+)\:(\d+)$/
 
     def initialize(object, method, args)
@@ -15,14 +14,14 @@ module Delayed
     def display_name  
       case self.object
       when CLASS_STRING_FORMAT then "#{$1}.#{method}"
-      when AR_STRING_FORMAT, DM_STRING_FORMAT then "#{$1}##{method}"
+      when DM_STRING_FORMAT then "#{$1}##{method}"
       else "Unknown##{method}"
       end      
     end    
 
     def perform
       load(object).send(method, *args.map{|a| load(a)})
-    rescue ActiveRecord::RecordNotFound, DataMapper::ObjectNotFoundError
+    rescue DataMapper::ObjectNotFoundError
       # We cannot do anything about objects which were deleted in the meantime
       true
     end
@@ -32,7 +31,6 @@ module Delayed
     def load(arg)
       case arg
       when CLASS_STRING_FORMAT then $1.constantize
-      when AR_STRING_FORMAT then $1.constantize.find($2)
       when DM_STRING_FORMAT then $1.constantize.get!($2) 
       else arg
       end
@@ -41,16 +39,11 @@ module Delayed
     def dump(arg)
       case arg
       when Class              then class_to_string(arg)
-      when ActiveRecord::Base then ar_to_string(arg)
       when DataMapper::Resource then dm_to_string(arg)
       else arg
       end
     end
 
-    def ar_to_string(obj)
-      "AR:#{obj.class}:#{obj.id}"
-    end
-    
     def dm_to_string(obj)
       "DM:#{obj.class}:#{obj.id}"
     end

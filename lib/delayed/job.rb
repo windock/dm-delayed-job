@@ -311,13 +311,3 @@ class EvaledJob
     eval(@job)
   end
 end
-
-#Place holder for type checking
-module ActiveRecord
-  module Base
-    def self.default_timezone
-      :boo
-    end
-  end
-  module RecordNotFound; end
-end
