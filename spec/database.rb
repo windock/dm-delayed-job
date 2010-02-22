@@ -20,4 +20,9 @@ class Story
 
   handle_asynchronously :whatever
 end
+
+class SomethingWithStringId
+  include DataMapper::Resource
+  property :id, String, :key => true
+end
 DataMapper.auto_migrate!

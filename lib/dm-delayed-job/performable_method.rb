@@ -1,7 +1,7 @@
 module Delayed
   class PerformableMethod < Struct.new(:object, :method, :args)
     CLASS_STRING_FORMAT = /^CLASS\:([A-Z][\w\:]+)$/
-    DM_STRING_FORMAT    = /^DM\:([A-Z][\w\:]+)\:(\d+)$/
+    DM_STRING_FORMAT    = /^DM\:([A-Z][\w\:]+)\:(.*)$/
 
     def initialize(object, method, args)
       raise NoMethodError, "undefined method `#{method}' for #{self.inspect}" unless object.respond_to?(method)

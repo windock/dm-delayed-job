@@ -85,7 +85,7 @@ describe 'random ruby objects' do
 
   end
 
-  it "should store the object as string if its an active record" do
+  it "should store the object as string if its a DataMapper" do
     story = Story.create :text => 'Once upon...'
     story.send_later(:tell)
 
@@ -97,7 +97,7 @@ describe 'random ruby objects' do
     job.payload_object.perform.should == 'Once upon...'
   end
 
-  it "should store arguments as string if they an active record" do
+  it "should store arguments as string if they a DataMapper" do
 
     story = Story.create :text => 'Once upon...'
 
@@ -110,7 +110,14 @@ describe 'random ruby objects' do
     job.payload_object.args.should    == ["DM:Story:#{story.id}"]
     job.payload_object.perform.should == 'Epilog: Once upon...'
   end                 
-  
+
+  it "should store DataMapper object as string even if it's id is some string" do
+    SomethingWithStringId.create(:id => "something stringy").send_later(:class)
+
+    job = Delayed::Job.first
+    job.payload_object.perform.should eql(SomethingWithStringId)
+  end
+
   it "should call send later on methods which are wrapped with handle_asynchronously" do
     story = Story.create :text => 'Once upon...'
   
