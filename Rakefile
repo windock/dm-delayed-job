@@ -1,5 +1,5 @@
 require 'spec/rake/spectask'
-desc "Run specs, run a specific spec with TASK=spec/path_to_spec.rb. By default the tests are run with ActiveRecord, set DM=true to run the tests with DataMapper."
+desc "Run specs, run a specific spec with TASK=spec/path_to_spec.rb."
 task :spec => [ "spec:default" ]
 
 namespace :spec do
